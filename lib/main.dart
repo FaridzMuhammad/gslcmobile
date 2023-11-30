@@ -8,70 +8,90 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Kalkulator Sederhana',
+      title: 'Animated Page Transition',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => HomePage(),
+        '/second': (context) => SecondPage(),
+      },
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  @override
-  _MyHomePageState createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  TextEditingController _controller1 = TextEditingController();
-  TextEditingController _controller2 = TextEditingController();
-  double result = 0;
-
+class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Kalkulator Sederhana'),
+        title: Text('Home Page'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            TextField(
-              controller: _controller1,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(labelText: 'Angka 1'),
-            ),
-            TextField(
-              controller: _controller2,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(labelText: 'Angka 2'),
-            ),
+            Text('Ini adalah halaman pertama'),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                calculateResult();
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation, secondaryAnimation) =>
+                        SecondPage(),
+                    transitionsBuilder:
+                        (context, animation, secondaryAnimation, child) {
+                      const begin = Offset(1.0, 0.0);
+                      const end = Offset.zero;
+                      const curve = Curves.easeInOut;
+
+                      var tween = Tween(begin: begin, end: end).chain(
+                        CurveTween(curve: curve),
+                      );
+
+                      var offsetAnimation = animation.drive(tween);
+
+                      return SlideTransition(
+                        position: offsetAnimation,
+                        child: child,
+                      );
+                    },
+                  ),
+                );
               },
-              child: Text('Hitung'),
-            ),
-            SizedBox(height: 20),
-            Text(
-              'Hasil: $result',
-              style: TextStyle(fontSize: 20),
+              child: Text('Pindah ke Halaman Kedua'),
             ),
           ],
         ),
       ),
     );
   }
+}
 
-  void calculateResult() {
-    double num1 = double.tryParse(_controller1.text) ?? 0;
-    double num2 = double.tryParse(_controller2.text) ?? 0;
-
-    setState(() {
-      result = num1 + num2;
-    });
+class SecondPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Second Page'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Ini adalah halaman kedua'),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text('Kembali ke Halaman Pertama'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
